@@ -20,7 +20,7 @@ Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
 Local Const $MOUSE_SPEED = 7
-Local Const $POPUP_DELAY = 120
+Local Const $POPUP_DELAY = 180
 Local Const $STEPS_TO_REACH_SKILL_TREE = 7 ; How many times we need to press "Up" button to reach skill tree. Tested on Chrome, Firefox, Opera
 Local Const $IMAGE_RECOGNITION_TOLERANCE = 0 ; 0-255. 0 is full match
 Local Const $IMAGE_RECOGNITION_TOLERANCE_FOR_ASCENDARY_BUTTONS = 50 ; 0-255. 0 is full match
@@ -215,65 +215,65 @@ Func StartGrabbing()
     AddSectionToWrite("General view, QR code")
     ; General view
     CaptureGeneralView()
-;~     ; Capture QR code
-;~     CaptureQRCode()    
+    ; Capture QR code
+    CaptureQRCode()    
 
     AddSectionToWrite("Main Hand")
     ; Left hand
     CaptureItem(65, 111, $ITEM_SIZE_2x6)
 
-;~     ResetMouseToInventoryStart() ; To prevent overlay from tooltip
+    ResetMouseToInventoryStart() ; To prevent overlay from tooltip
 
-;~     AddSectionToWrite("Off Hand")
-;~     ; Right hand
-;~     CaptureItem(437, 111, $ITEM_SIZE_2x6)
+    AddSectionToWrite("Off Hand")
+    ; Right hand
+    CaptureItem(437, 111, $ITEM_SIZE_2x6)
 
-;~     AddSectionToWrite("Armour")
-;~     ; Armour
-;~     CaptureItem(251, 206, $ITEM_SIZE_2x4)
+    AddSectionToWrite("Armour")
+    ; Armour
+    CaptureItem(251, 206, $ITEM_SIZE_2x4)
 
-;~     ResetMouseToInventoryStart() ; To prevent overlay from tooltip
+    ResetMouseToInventoryStart() ; To prevent overlay from tooltip
 
-;~     AddSectionToWrite("Helmet")
-;~     ; Helmet
-;~     CaptureItem(251, 99, $ITEM_SIZE_2x2)
+    AddSectionToWrite("Helmet")
+    ; Helmet
+    CaptureItem(251, 99, $ITEM_SIZE_2x2)
 
-;~     AddSectionToWrite("Gloves")
-;~     ; Gloves
-;~     CaptureItem(134, 312, $ITEM_SIZE_2x2)
+    AddSectionToWrite("Gloves")
+    ; Gloves
+    CaptureItem(134, 312, $ITEM_SIZE_2x2)
 
-;~     AddSectionToWrite("Boots")
-;~     ; Boots
-;~     CaptureItem(367, 312, $ITEM_SIZE_2x2)
+    AddSectionToWrite("Boots")
+    ; Boots
+    CaptureItem(367, 312, $ITEM_SIZE_2x2)
 
-;~     ResetMouseToInventoryStart() ; To prevent overlay from tooltip
+    ResetMouseToInventoryStart() ; To prevent overlay from tooltip
 
-;~     AddSectionToWrite("Amulet, Rings, Belt")
-;~     ; Amulet
-;~     CaptureItem(368, 194, $ITEM_SIZE_1x1)
+    AddSectionToWrite("Amulet, Rings, Belt")
+    ; Amulet
+    CaptureItem(368, 194, $ITEM_SIZE_1x1)
 
-;~     ; Rings
-;~     CaptureItem(182, 253, $ITEM_SIZE_1x1)
-;~     CaptureItem(368, 253, $ITEM_SIZE_1x1)
+    ; Rings
+    CaptureItem(182, 253, $ITEM_SIZE_1x1)
+    CaptureItem(368, 253, $ITEM_SIZE_1x1)
 
-;~     ; Belt
-;~     CaptureItem(251, 360, $ITEM_SIZE_2x1, false)
+    ; Belt
+    CaptureItem(251, 360, $ITEM_SIZE_2x1, false)
 
-;~     AddSectionToWrite("Flasks")
-;~     ; Flasks
-;~     CaptureItem(186, 419, $ITEM_SIZE_1x2, false)
-;~     CaptureItem(233, 419, $ITEM_SIZE_1x2, false)
-;~     CaptureItem(281, 419, $ITEM_SIZE_1x2, false)
-;~     CaptureItem(328, 419, $ITEM_SIZE_1x2, false)
-;~     CaptureItem(376, 419, $ITEM_SIZE_1x2, false)
+    AddSectionToWrite("Flasks")
+    ; Flasks
+    CaptureItem(186, 419, $ITEM_SIZE_1x2, false)
+    CaptureItem(233, 419, $ITEM_SIZE_1x2, false)
+    CaptureItem(281, 419, $ITEM_SIZE_1x2, false)
+    CaptureItem(328, 419, $ITEM_SIZE_1x2, false)
+    CaptureItem(376, 419, $ITEM_SIZE_1x2, false)
 
-;~     AddSectionToWrite("Ascendary Passive Skill Tree")
-;~     ; Capture Ascendary skill tree        
-;~     CaptureAscendarySkillTree()
+    AddSectionToWrite("Ascendary Passive Skill Tree")
+    ; Capture Ascendary skill tree        
+    CaptureAscendarySkillTree()
 
-;~     AddSectionToWrite("Passive Skill Tree")
-;~     ; Capture skill tree    
-;~     CaptureSkillTree()
+    AddSectionToWrite("Passive Skill Tree")
+    ; Capture skill tree    
+    CaptureSkillTree()
 
     SaveBuild()    
 
@@ -898,7 +898,7 @@ Func SaveBuild()
     
     $draw_x += 71
     $poe_icon_image = _GDIPlus_ImageLoadFromFile("data\poe_icon.png")
-    _GDIPlus_GraphicsDrawImageRect($hBmpCtxt, $reddit_icon_image, $draw_x, $draw_y + 2, 16, 16)
+    _GDIPlus_GraphicsDrawImageRect($hBmpCtxt, $poe_icon_image, $draw_x, $draw_y + 2, 16, 16)
     _GDIPlus_GraphicsDrawStringColor($hBmpCtxt, "MisaMisa", $draw_x + 16, $draw_y + 1, "Verdana", 10, 0, 0xFF336699)
     _GDIPlus_ImageDispose($poe_icon_image)
     
