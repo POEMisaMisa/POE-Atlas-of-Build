@@ -214,7 +214,7 @@ Func StartGrabbing()
 
     AddSectionToWrite("General view, QR code")
     ; General view
-    CaptureGeneralView()
+    CaptureGeneralView()    
     ; Capture QR code
     CaptureQRCode()
 
@@ -227,6 +227,22 @@ Func StartGrabbing()
     AddSectionToWrite("Off Hand")
     ; Right hand
     CaptureItem(437, 111, $ITEM_SIZE_2x6)
+
+    if (_IsChecked($idCaptureWeaponSwapCheckbox)) Then
+        SwapWeaponSlot()
+        
+        AddSectionToWrite("Weapon Swap Main Hand")
+        ; Left hand
+        CaptureItem(65, 111, $ITEM_SIZE_2x6)
+
+        ResetMouseToInventoryStart() ; To prevent overlay from tooltip
+
+        AddSectionToWrite("Weapon Swap Off Hand")
+        ; Right hand
+        CaptureItem(437, 111, $ITEM_SIZE_2x6)
+        
+        SwapWeaponSlot()
+    EndIf
 
     AddSectionToWrite("Armour")
     ; Armour
@@ -324,6 +340,11 @@ Func CaptureCurrentTreeView($hBmpCtxt, $row, $column)
     EndIf
 
     _WinAPI_DeleteObject($captured_view)
+EndFunc
+
+Func SwapWeaponSlot()
+    MouseClick($MOUSE_CLICK_PRIMARY, $inventory_x + 105, $inventory_y + 100, 1)
+    Sleep($POPUP_DELAY)	
 EndFunc
 
 Func TryToCaptureJewel($jewel_id)
@@ -1450,11 +1471,14 @@ Func StopProgram()
     Exit 0
 EndFunc
 
+; Make sure process is checking system DPI settings when moves mouse
+DllCall("User32.dll", "bool", "SetProcessDPIAware")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; GUI Section
 _GDIPlus_Startup()
 Local Const $GUI_WINDOW_WIDTH = 460
-Local Const $GUI_WINDOW_HEIGHT = 480
+Local Const $GUI_WINDOW_HEIGHT = 500 
 Local $hGUI = GUICreate($SCRIPT_NAME & " - " & $SCRIPT_VERSION, $GUI_WINDOW_WIDTH, $GUI_WINDOW_HEIGHT , 15, _Max(75, @DesktopHeight / 4 - $GUI_WINDOW_HEIGHT / 2), -1, BitOR($WS_EX_TOPMOST, $WS_EX_COMPOSITED))
 
 GUISetIcon("data\poe_icon.ico")
@@ -1481,6 +1505,11 @@ GUICtrlSetFont($idStatusLabel, 10, $FW_NORMAL, 0, "Tahoma")
 $gui_offset_y += 20
 Local $idWarningLabel = GUICtrlCreateLabel("Please don't touch your mouse while this script works", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH, 18)
 GUICtrlSetFont(-1, 10, $FW_NORMAL, 0, "Tahoma")
+GUICtrlSetState(-1, $GUI_HIDE)
+
+Local $idScaleLabel = GUICtrlCreateLabel("Make sure that system UI and browser page scale is reset to 100%", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH, 18)
+GUICtrlSetFont(-1, 10, $FW_NORMAL, 0, "Tahoma")
+GUICtrlSetColor(-1, 0xFF3030)
 GUICtrlSetState(-1, $GUI_HIDE)
 
 $gui_offset_y += 20
@@ -1513,17 +1542,26 @@ $gui_offset_y += 18
 Local $idBuildNotesMemo = GuiCtrlCreateEdit("", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH - 21, 120, $ES_AUTOVSCROLL + $WS_VSCROLL + $ES_NOHIDESEL + $ES_WANTRETURN)
 $gui_offset_y += 124
 
+Local $idCaptureWeaponSwapCheckbox = GUICtrlCreateCheckbox("Capture weapon swap items", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH, 18)
+GUICtrlSetFont(-1, 10, $FW_NORMAL, 0, "Tahoma")
+$gui_offset_y += 20
+$gui_offset_y += 5
+
 Local $idBuildSavefileLabel = GUICtrlCreateLabel("", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH, 18)
 GUICtrlSetFont(-1, 10, $FW_NORMAL, 0, "Tahoma")
 $gui_offset_y += 18
 GUICtrlCreateLabel("If file exists it will be overwritten", $gui_offset_x, $gui_offset_y, $GUI_WINDOW_WIDTH, 18)
 GUICtrlSetFont(-1, 10, $FW_NORMAL, 0, "Tahoma")
 
+; Paypal donate
+;Local $idDonateButton = GUICtrlCreatePic("data\donate.bmp", 7, $GUI_WINDOW_HEIGHT - 30 - 4, 155, 30)
+
 ; Focus input on build name
 GUICtrlSetState($idBuildNameInput, $GUI_FOCUS)
 UpdateBuildSavingName()
 
 _GUICtrlPanel_Create($hGUI, "", 10, 160, $GUI_WINDOW_WIDTH - 20, 0, 0, @SW_SHOWNA)
+_GUICtrlPanel_Create($hGUI, "", 10, $GUI_WINDOW_HEIGHT - 74, $GUI_WINDOW_WIDTH - 20, 0, 0, @SW_SHOWNA)
 
 Func UpdateBuildSavingName()
     ControlSetText($hGUI, "", $idBuildSavefileLabel , "Build will be saved as: " & $build_saving_folder & "\" & GetBuildSavingName() & ".png" , 1)
@@ -1537,18 +1575,28 @@ Func _GUIProcessTimer($hWnd, $iMsg, $iIDTimer, $iTime)
     If _ImageSearch("data\inventory.bmp", 0, $x, $y, 10) Then
         ControlSetText($hGUI, "", $idStatusLabel, "Status: inventory found. Wait for page to load and Press F2 to start", 1)
         GUICtrlSetColor($idStatusLabel, 0x000000)
+        
         GUICtrlSetState($idWarningLabel, $GUI_SHOW)
         GUICtrlSetState($idExitInfoLabel, $GUI_SHOW)
+        
+        GUICtrlSetState($idScaleLabel, $GUI_HIDE)
     Else
         ControlSetText($hGUI, "", $idStatusLabel, "Status: inventory not found. Open browser page with inventory opened", 1)
         GUICtrlSetColor($idStatusLabel, 0xFF3030)
+        
         GUICtrlSetState($idWarningLabel, $GUI_HIDE)
         GUICtrlSetState($idExitInfoLabel, $GUI_HIDE)
+        
+        GUICtrlSetState($idScaleLabel, $GUI_SHOW)
     EndIf
 
     ; Generate saved build name
     UpdateBuildSavingName()
 EndFunc
+
+Func _IsChecked($idControlID)
+    Return BitAND(GUICtrlRead($idControlID), $GUI_CHECKED) = $GUI_CHECKED
+EndFunc 
 
 Func PROCESS_WM_COMMAND($hWnd, $imsg, $iwParam, $ilParam)
     $nNotifyCode = BitShift($iwParam, 16)
@@ -1572,6 +1620,8 @@ While 1
     Switch GUIGetMsg()
         Case $GUI_EVENT_CLOSE, $idCloseButton
             ExitLoop
+        ;Case $idDonateButton
+        ;	ShellExecute("https://www.paypal.me/POEMisaMisa")
     EndSwitch
 WEnd
 
