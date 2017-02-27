@@ -15,7 +15,7 @@
 #include <GuiEdit.au3>
 
 Local Const $SCRIPT_NAME = "Atlas of Build"
-Local Const $SCRIPT_VERSION = "1.3"
+Local Const $SCRIPT_VERSION = "1.4"
 Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
@@ -122,6 +122,8 @@ Local Const $ASCENDARY_TREE_SCREEN_HEIGHT = 390
 
 Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_X = 160
 Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_Y = 217
+Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX = 50
+Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX = 297
 
 Dim $tree_screen_x = 0
 Dim $tree_screen_y = 0
@@ -214,7 +216,7 @@ Func StartGrabbing()
 
     AddSectionToWrite("General view, QR code")
     ; General view
-    CaptureGeneralView()    
+    CaptureGeneralView()
     ; Capture QR code
     CaptureQRCode()
 
@@ -230,7 +232,7 @@ Func StartGrabbing()
 
     if (_IsChecked($idCaptureWeaponSwapCheckbox)) Then
         SwapWeaponSlot()
-        
+
         AddSectionToWrite("Weapon Swap Main Hand")
         ; Left hand
         CaptureItem(65, 111, $ITEM_SIZE_2x6)
@@ -240,7 +242,7 @@ Func StartGrabbing()
         AddSectionToWrite("Weapon Swap Off Hand")
         ; Right hand
         CaptureItem(437, 111, $ITEM_SIZE_2x6)
-        
+
         SwapWeaponSlot()
     EndIf
 
@@ -344,7 +346,7 @@ EndFunc
 
 Func SwapWeaponSlot()
     MouseClick($MOUSE_CLICK_PRIMARY, $inventory_x + 105, $inventory_y + 100, 1)
-    Sleep($POPUP_DELAY)	
+    Sleep($POPUP_DELAY)
 EndFunc
 
 Func TryToCaptureJewel($jewel_id)
@@ -425,12 +427,20 @@ Func CaptureSkillTree()
     Next
 
     ; Search for skill tree marker
+	Local $tree_found = false
     $skill_tree_marker_x = 0
     $skill_tree_marker_y = 0
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
-        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
+        $tree_found = true
+		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
         Sleep($POPUP_DELAY)
+	ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
+        $tree_found = true
+		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
+        Sleep($POPUP_DELAY)
+	EndIf
 
+	If $tree_found Then
         ; Scroll out
         MouseWheel("down", 10)
         Sleep($POPUP_DELAY)
@@ -646,13 +656,21 @@ Func CaptureAscendarySkillTree()
         Sleep($POPUP_DELAY)
     Next
 
-    ; Search for skill tree marker
+	; Search for skill tree marker
+	Local $tree_found = false
     $skill_tree_marker_x = 0
     $skill_tree_marker_y = 0
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
-        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
+        $tree_found = true
+		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
         Sleep($POPUP_DELAY)
+	ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
+        $tree_found = true
+		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
+        Sleep($POPUP_DELAY)
+	EndIf
 
+	If $tree_found Then
         ; Scroll out
         MouseWheel("down", 10)
         Sleep($POPUP_DELAY)
@@ -1478,7 +1496,7 @@ DllCall("User32.dll", "bool", "SetProcessDPIAware")
 ; GUI Section
 _GDIPlus_Startup()
 Local Const $GUI_WINDOW_WIDTH = 460
-Local Const $GUI_WINDOW_HEIGHT = 500 
+Local Const $GUI_WINDOW_HEIGHT = 500
 Local $hGUI = GUICreate($SCRIPT_NAME & " - " & $SCRIPT_VERSION, $GUI_WINDOW_WIDTH, $GUI_WINDOW_HEIGHT , 15, _Max(75, @DesktopHeight / 4 - $GUI_WINDOW_HEIGHT / 2), -1, BitOR($WS_EX_TOPMOST, $WS_EX_COMPOSITED))
 
 GUISetIcon("data\poe_icon.ico")
@@ -1575,18 +1593,18 @@ Func _GUIProcessTimer($hWnd, $iMsg, $iIDTimer, $iTime)
     If _ImageSearch("data\inventory.bmp", 0, $x, $y, 10) Then
         ControlSetText($hGUI, "", $idStatusLabel, "Status: inventory found. Wait for page to load and Press F2 to start", 1)
         GUICtrlSetColor($idStatusLabel, 0x000000)
-        
+
         GUICtrlSetState($idWarningLabel, $GUI_SHOW)
         GUICtrlSetState($idExitInfoLabel, $GUI_SHOW)
-        
+
         GUICtrlSetState($idScaleLabel, $GUI_HIDE)
     Else
         ControlSetText($hGUI, "", $idStatusLabel, "Status: inventory not found. Open browser page with inventory opened", 1)
         GUICtrlSetColor($idStatusLabel, 0xFF3030)
-        
+
         GUICtrlSetState($idWarningLabel, $GUI_HIDE)
         GUICtrlSetState($idExitInfoLabel, $GUI_HIDE)
-        
+
         GUICtrlSetState($idScaleLabel, $GUI_SHOW)
     EndIf
 
@@ -1596,7 +1614,7 @@ EndFunc
 
 Func _IsChecked($idControlID)
     Return BitAND(GUICtrlRead($idControlID), $GUI_CHECKED) = $GUI_CHECKED
-EndFunc 
+EndFunc
 
 Func PROCESS_WM_COMMAND($hWnd, $imsg, $iwParam, $ilParam)
     $nNotifyCode = BitShift($iwParam, 16)
