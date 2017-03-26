@@ -15,13 +15,13 @@
 #include <GuiEdit.au3>
 
 Local Const $SCRIPT_NAME = "Atlas of Build"
-Local Const $SCRIPT_VERSION = "1.4"
+Local Const $SCRIPT_VERSION = "1.5"
 Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
 Local Const $MOUSE_SPEED = 7
 Local Const $POPUP_DELAY = 180
-Local Const $STEPS_TO_REACH_SKILL_TREE = 7 ; How many times we need to press "Up" button to reach skill tree. Tested on Chrome, Firefox, Opera
+Local Const $STEPS_TO_REACH_SKILL_TREE = 8 ; How many times we need to press "Up" button to reach skill tree. Tested on Chrome, Firefox, Opera
 Local Const $IMAGE_RECOGNITION_TOLERANCE = 0 ; 0-255. 0 is full match
 Local Const $IMAGE_RECOGNITION_TOLERANCE_FOR_ASCENDARY_BUTTONS = 50 ; 0-255. 0 is full match
 
@@ -70,6 +70,9 @@ Dim $jewel_offsets[21][6] = [[631, 211, 0, 0, 0, 0x454080FF], _ ; 0
                              [275, 241, 1, 5, 0, 0x4580FF40], _ ; 18
                              [579,  57, 0, 6, 0, 0x457040FF], _ ; 19
                              [708,  75, 1, 6, 1, 0x45FFD040]]   ; 20
+; Customized offstets for jewels since skilltree is slightly changes in every patch
+Dim $JEWEL_CORRECTION_X = -2
+Dim $JEWEL_CORRECTION_Y = -2
 
 ; This order used to prevent some trivial crossed lines overlaps
 Dim $jewels_draw_order[21] = [0,  4,  9,  3,  8,  7, 15, 14, 18, 19, _   ; Left jewel section order
@@ -213,7 +216,6 @@ Func StartGrabbing()
     FindInventory()
 
     ; Start grabbing sections
-
     AddSectionToWrite("General view, QR code")
     ; General view
     CaptureGeneralView()
@@ -312,9 +314,12 @@ Func DragMouse($pos_x, $pos_y, $restore_offset = true)
     Sleep($POPUP_DELAY)
 EndFunc
 
-Func DragMouseRelative($offset_x, $offset_y, $restore_offset = true)
+Func DragMouseRelative($offset_x, $offset_y, $restore_offset = true, $additional_click = false)
     Local $mouse_pos = MouseGetPos()
     MouseClickDrag($MOUSE_CLICK_PRIMARY, $mouse_pos[0], $mouse_pos[1], $mouse_pos[0] + $offset_x, $mouse_pos[1] + $offset_y, 0)
+    if $additional_click Then
+        PrimaryClickMouseRelative()
+    EndIf
     if $restore_offset Then
         MouseMove($mouse_pos[0], $mouse_pos[1], $MOUSE_SPEED)
     EndIf
@@ -353,8 +358,8 @@ Func TryToCaptureJewel($jewel_id)
     ; Saving mouse position before offset
     Local $saved_mouse_pos = MouseGetPos()
 
-    Local $delta_x = ($tree_screen_x + $jewel_offsets[$jewel_id][0]) - $saved_mouse_pos[0]
-    Local $delta_y = ($tree_screen_y + $jewel_offsets[$jewel_id][1]) - $saved_mouse_pos[1]
+    Local $delta_x = ($tree_screen_x + $jewel_offsets[$jewel_id][0] + $JEWEL_CORRECTION_X) - $saved_mouse_pos[0]
+    Local $delta_y = ($tree_screen_y + $jewel_offsets[$jewel_id][1] + $JEWEL_CORRECTION_Y) - $saved_mouse_pos[1]
 
     ; Search for jewel first. Not always working because of shadow overlay, but still saves some time
     $not_used_x = 0
@@ -427,20 +432,20 @@ Func CaptureSkillTree()
     Next
 
     ; Search for skill tree marker
-	Local $tree_found = false
+    Local $tree_found = false
     $skill_tree_marker_x = 0
     $skill_tree_marker_y = 0
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
-		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
+        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
         Sleep($POPUP_DELAY)
-	ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
+    ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
-		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
+        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
         Sleep($POPUP_DELAY)
-	EndIf
+    EndIf
 
-	If $tree_found Then
+    If $tree_found Then
         ; Scroll out
         MouseWheel("down", 10)
         Sleep($POPUP_DELAY)
@@ -452,7 +457,7 @@ Func CaptureSkillTree()
 
         ; Offest to top left corner. Should be enough even starting on duelist/ranger areas
         for $i = 1 to 10
-            DragMouseRelative(430, 190)
+            DragMouseRelative(430, 190, true, true)
         Next
 
         $hTreeBitmap = _GDIPlus_BitmapCreateFromScan0($TREE_SCREEN_WIDTH * $TREE_TILES_WIDTH, $TREE_SCREEN_HEIGHT * $TREE_TILES_HEIGHT)
@@ -497,29 +502,29 @@ Func CaptureSkillTree()
 
             if $going_right Then
                 if $current_row == ($TREE_TILES_WIDTH - 1) Then
-                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2)
-                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2)
+                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2, true, true)
+                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2, true, true)
 
                     $current_column += 1
 
                     $going_right = false
                 Else
-                    DragMouseRelative(-$TREE_SCREEN_WIDTH / 2, 0)
-                    DragMouseRelative(-$TREE_SCREEN_WIDTH / 2, 0)
+                    DragMouseRelative(-$TREE_SCREEN_WIDTH / 2, 0, true, true)
+                    DragMouseRelative(-$TREE_SCREEN_WIDTH / 2, 0, true, true)
 
                     $current_row += 1
                 EndIf
             Else
                 if $current_row == 0 Then
-                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2)
-                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2)
+                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2, true, true)
+                    DragMouseRelative(0, -$TREE_SCREEN_HEIGHT / 2, true, true)
 
                     $current_column += 1
 
                     $going_right = true
                 Else
-                    DragMouseRelative($TREE_SCREEN_WIDTH / 2, 0)
-                    DragMouseRelative($TREE_SCREEN_WIDTH / 2, 0)
+                    DragMouseRelative($TREE_SCREEN_WIDTH / 2, 0, true, true)
+                    DragMouseRelative($TREE_SCREEN_WIDTH / 2, 0, true, true)
 
                     $current_row -= 1
                 EndIf
@@ -594,8 +599,8 @@ Func CaptureSkillTree()
                 _GDIPlus_GraphicsDrawImage($hTreeAndJewelsBmpCtxt, $jewels_to_write_img_handle[$jewel], $jewel_item_draw_x, $jewel_item_draw_y)
 
                 ; Get jewel coordinates in tree
-                Local $jewel_draw_x = $tree_offset_x + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][2] * $TREE_SCREEN_WIDTH + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][0]
-                Local $jewel_draw_y = $tree_offset_y + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][3] * $TREE_SCREEN_HEIGHT + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][1]
+                Local $jewel_draw_x = $tree_offset_x + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][2] * $TREE_SCREEN_WIDTH + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][0] + $JEWEL_CORRECTION_X
+                Local $jewel_draw_y = $tree_offset_y + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][3] * $TREE_SCREEN_HEIGHT + $jewel_offsets[$jewels_to_write_jewel_id[$jewel]][1] + $JEWEL_CORRECTION_Y
 
                 ; Draw line from jewel in tree to jewel item
                 Local $hPen = _GDIPlus_PenCreate($jewel_offsets[$jewels_to_write_jewel_id[$jewel]][5], 3)
@@ -613,10 +618,12 @@ Func CaptureSkillTree()
 
         ; Debug jewels circles
         if $DEBUG_MODE Then
+            ConsoleWriteLn("Jewels found: " & UBound($jewels_to_write_jewel_id, $UBOUND_ROWS))
+
             For $jewel_id = 0 to UBound($jewel_offsets, $UBOUND_ROWS) - 1
                 ; Get jewel coordinates in tree
-                Local $jewel_draw_x = $tree_offset_x + $jewel_offsets[$jewel_id][2] * $TREE_SCREEN_WIDTH + $jewel_offsets[$jewel_id][0]
-                Local $jewel_draw_y = $tree_offset_y + $jewel_offsets[$jewel_id][3] * $TREE_SCREEN_HEIGHT + $jewel_offsets[$jewel_id][1]
+                Local $jewel_draw_x = $tree_offset_x + $jewel_offsets[$jewel_id][2] * $TREE_SCREEN_WIDTH + $jewel_offsets[$jewel_id][0] + $JEWEL_CORRECTION_X
+                Local $jewel_draw_y = $tree_offset_y + $jewel_offsets[$jewel_id][3] * $TREE_SCREEN_HEIGHT + $jewel_offsets[$jewel_id][1] + $JEWEL_CORRECTION_Y
 
                 ; Draw jewel circle
                 Local $hPen = _GDIPlus_PenCreate(0xFFFE0000, 1)
@@ -656,21 +663,21 @@ Func CaptureAscendarySkillTree()
         Sleep($POPUP_DELAY)
     Next
 
-	; Search for skill tree marker
-	Local $tree_found = false
+    ; Search for skill tree marker
+    Local $tree_found = false
     $skill_tree_marker_x = 0
     $skill_tree_marker_y = 0
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
-		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
+        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
         Sleep($POPUP_DELAY)
-	ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
+    ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
-		MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
+        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
         Sleep($POPUP_DELAY)
-	EndIf
+    EndIf
 
-	If $tree_found Then
+    If $tree_found Then
         ; Scroll out
         MouseWheel("down", 10)
         Sleep($POPUP_DELAY)
