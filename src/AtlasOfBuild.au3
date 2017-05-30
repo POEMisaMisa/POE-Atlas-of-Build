@@ -395,6 +395,7 @@ Func TryToCaptureJewel($jewel_id)
     ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width) Then
     ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width) Then
     ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width) Then
+	ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width) Then
     EndIf
 
     ; Jewel found?
@@ -1392,6 +1393,7 @@ Func CaptureItem($offset_x, $offset_y, $size, $need_show_links = true)
     ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width) Then
     ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width) Then
     ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width) Then
+	ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width) Then
     EndIf
 
     ; Item found?
