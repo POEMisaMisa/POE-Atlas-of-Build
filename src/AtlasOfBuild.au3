@@ -15,13 +15,13 @@
 #include <GuiEdit.au3>
 
 Local Const $SCRIPT_NAME = "Atlas of Build"
-Local Const $SCRIPT_VERSION = "1.5"
+Local Const $SCRIPT_VERSION = "1.7"
 Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
 Local Const $MOUSE_SPEED = 7
 Local Const $POPUP_DELAY = 180
-Local Const $STEPS_TO_REACH_SKILL_TREE = 8 ; How many times we need to press "Up" button to reach skill tree. Tested on Chrome, Firefox, Opera
+Local Const $STEPS_TO_REACH_SKILL_TREE = 10 ; How many times we need to press "Up" button to reach skill tree. Tested on Chrome, Firefox, Opera
 Local Const $IMAGE_RECOGNITION_TOLERANCE = 0 ; 0-255. 0 is full match
 Local Const $IMAGE_RECOGNITION_TOLERANCE_FOR_ASCENDARY_BUTTONS = 50 ; 0-255. 0 is full match
 
@@ -72,7 +72,7 @@ Dim $jewel_offsets[21][6] = [[631, 211, 0, 0, 0, 0x454080FF], _ ; 0
                              [708,  75, 1, 6, 1, 0x45FFD040]]   ; 20
 ; Customized offstets for jewels since skilltree is slightly changes in every patch
 Dim $JEWEL_CORRECTION_X = -2
-Dim $JEWEL_CORRECTION_Y = -2
+Dim $JEWEL_CORRECTION_Y = -34
 
 ; This order used to prevent some trivial crossed lines overlaps
 Dim $jewels_draw_order[21] = [0,  4,  9,  3,  8,  7, 15, 14, 18, 19, _   ; Left jewel section order
@@ -123,10 +123,10 @@ Local Const $TREE_SCREEN_HEIGHT = 260
 Local Const $ASCENDARY_TREE_SCREEN_WIDTH = 392
 Local Const $ASCENDARY_TREE_SCREEN_HEIGHT = 390
 
-Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_X = 160
-Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_Y = 217
-Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX = 50
-Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX = 297
+Local Const $ASCENDARY_TREE_OFFSET_FROM_BOTTOM_X = 50
+Local Const $ASCENDARY_TREE_OFFSET_FROM_BOTTOM_Y = 327
+Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_X = 50
+Local Const $SKILL_TREE_OFFSET_FROM_BOTTOM_Y = 327
 
 Dim $tree_screen_x = 0
 Dim $tree_screen_y = 0
@@ -216,11 +216,11 @@ Func StartGrabbing()
     FindInventory()
 
     ; Start grabbing sections
-    AddSectionToWrite("General view, QR code")
+    AddSectionToWrite("General view")
     ; General view
     CaptureGeneralView()
     ; Capture QR code
-    CaptureQRCode()
+    ;CaptureQRCode()
 
     AddSectionToWrite("Main Hand")
     ; Left hand
@@ -404,7 +404,7 @@ Func TryToCaptureJewel($jewel_id)
         Local $current_mouse_pos = MouseGetPos()
 
         $item_width -= 1
-        $item_height = Abs($item_left_y - $current_mouse_pos[1]) - 10
+        $item_height = Abs($item_left_y - $current_mouse_pos[1]) - 20
 
         ; Save item
         $captured_item = _ScreenCapture_Capture("", $item_left_x, $item_left_y, $item_left_x + $item_width, $item_left_y + $item_height, False)
@@ -439,10 +439,6 @@ Func CaptureSkillTree()
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
         MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
-        Sleep($POPUP_DELAY)
-    ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
-        $tree_found = true
-        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
         Sleep($POPUP_DELAY)
     EndIf
 
@@ -670,11 +666,7 @@ Func CaptureAscendarySkillTree()
     $skill_tree_marker_y = 0
     If _ImageSearch("data\site_tree_points_marker.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
         $tree_found = true
-        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y, 0)
-        Sleep($POPUP_DELAY)
-    ElseIf _ImageSearch("data\site_tree_points_marker_ex.bmp", 0, $skill_tree_marker_x, $skill_tree_marker_y, 5) Then
-        $tree_found = true
-        MouseMove($skill_tree_marker_x + $SKILL_TREE_OFFSET_FROM_BOTTOM_X_EX, $skill_tree_marker_y + $SKILL_TREE_OFFSET_FROM_BOTTOM_Y_EX, 0)
+        MouseMove($skill_tree_marker_x + $ASCENDARY_TREE_OFFSET_FROM_BOTTOM_X, $skill_tree_marker_y + $ASCENDARY_TREE_OFFSET_FROM_BOTTOM_Y, 0)
         Sleep($POPUP_DELAY)
     EndIf
 
