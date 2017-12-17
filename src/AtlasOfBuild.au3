@@ -15,7 +15,7 @@
 #include <GuiEdit.au3>
 
 Local Const $SCRIPT_NAME = "Atlas of Build"
-Local Const $SCRIPT_VERSION = "1.7"
+Local Const $SCRIPT_VERSION = "1.8"
 Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
@@ -277,7 +277,7 @@ Func StartGrabbing()
     CaptureItem(368, 253, $ITEM_SIZE_1x1)
 
     ; Belt
-    CaptureItem(251, 360, $ITEM_SIZE_2x1, false)
+    CaptureItem(251, 360, $ITEM_SIZE_2x1)
 
     AddSectionToWrite("Flasks")
     ; Flasks
@@ -391,11 +391,19 @@ Func TryToCaptureJewel($jewel_id)
     $item_width = -1
     $item_height = -1
 
-    if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width) Then
-	ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width) Then
+    if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare4", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width, 0) Then
     EndIf
 
     ; Jewel found?
@@ -1025,12 +1033,12 @@ Func SaveBuild()
     ShellExecute($build_output_full_filename)
 EndFunc
 
-Func SearchForItemType($item_type, ByRef $result_item_left_x, ByRef $result_item_left_y, ByRef $result_item_width)
-    If _ImageSearch("data\item_" & $item_type & "_left.bmp", 0, $result_item_left_x, $result_item_left_y, $IMAGE_RECOGNITION_TOLERANCE) Then
+Func SearchForItemType($item_type, ByRef $result_item_left_x, ByRef $result_item_left_y, ByRef $result_item_width, $offset_x)
+    If _ImageSearchArea("data\item_" & $item_type & "_left.bmp", 0, $offset_x, 0, @DesktopWidth, @DesktopHeight, $result_item_left_x, $result_item_left_y, $IMAGE_RECOGNITION_TOLERANCE) Then
         $item_right_x = 0
         $item_right_y = 0
 
-        If _ImageSearch("data\item_" & $item_type & "_right.bmp", 0, $item_right_x, $item_right_y, $IMAGE_RECOGNITION_TOLERANCE) Then
+        If _ImageSearchArea("data\item_" & $item_type & "_right.bmp", 0, $offset_x, 0, @DesktopWidth, @DesktopHeight, $item_right_x, $item_right_y, $IMAGE_RECOGNITION_TOLERANCE) Then
             $result_item_width = $item_right_x - $result_item_left_x + 25
 
             Return True
@@ -1102,8 +1110,46 @@ Func TryToCaptureGem($gem_number, $size, $width, $height, $gems_search_type, $of
     MouseMove($offset_x + $shift_x, $offset_y + $shift_y, $MOUSE_SPEED)
     Sleep($POPUP_DELAY)
 
+	; Search for original item position first
+    $original_item_left_x = 0 ; Not -1 because will be setup as offset later
+    $original_item_left_y = -1 ; Never used
+    $original_item_width = -1 ; Never used
+    if     SearchForItemType("unique", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("unique2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("rare", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("rare2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("rare3", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("rare4", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("magic", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("magic2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("magic3", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("white", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("white2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("white3", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    ElseIf SearchForItemType("legacy_unique", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+    EndIf
+
+	$offset_for_gem = 0
+	if $original_item_left_x <> 0 Then
+		$offset_for_gem = $original_item_left_x + $original_item_width + 5 ; Setting up offset to search for gem, jewel, etc. Should be enough
+	EndIf	
+	
     ; Search for item tooltip
-    SearchForItemType("gem", $item_left_x, $item_left_y, $item_width)
+    if     SearchForItemType("gem", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+	ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("rare4", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("magic2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("magic3", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("white2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("white3", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+    EndIf
 
     ; Item found?
     if $item_left_x <> -1 Then
@@ -1375,17 +1421,27 @@ Func CaptureItem($offset_x, $offset_y, $size, $need_show_links = true)
             MouseMoveRelative(6, $height + 10)
         Case $ITEM_SIZE_1x1
             MouseMoveRelative(6, $height + 7)
-        Case $ITEM_SIZE_2x1, $ITEM_SIZE_1x2
+		Case $ITEM_SIZE_2x1
+			MouseMoveRelative(6, $height + 7)
+        Case $ITEM_SIZE_1x2
             MouseMoveRelative($width / 2, $height / 2)
     EndSwitch
     Sleep($POPUP_DELAY)
 
     ; Search for item tooltip
-    if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width) Then
-    ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width) Then
-	ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width) Then
+    if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("rare4", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("magic3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("white3", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("legacy_unique", $item_left_x, $item_left_y, $item_width, 0) Then
     EndIf
 
     ; Item found?
@@ -1409,7 +1465,10 @@ Func CaptureItem($offset_x, $offset_y, $size, $need_show_links = true)
         Switch $size
             Case $ITEM_SIZE_1x1
                 SearchForGems($GEMS_1L, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)
-            Case $ITEM_SIZE_2x2
+            Case $ITEM_SIZE_2x1
+                SearchForGems($GEMS_2L_HORIZONTAL, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)
+                SearchForGems($GEMS_1L, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)				
+			Case $ITEM_SIZE_2x2
                 SearchForGems($GEMS_4L_SQUARE, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)
                 SearchForGems($GEMS_2L_HORIZONTAL, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)
                 SearchForGems($GEMS_1L, $size, $inventory_x + $offset_x, $inventory_y + $offset_y, $width, $height, $gems_type_result, $best_gems_found_result)
