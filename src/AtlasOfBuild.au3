@@ -15,7 +15,7 @@
 #include <GuiEdit.au3>
 
 Local Const $SCRIPT_NAME = "Atlas of Build"
-Local Const $SCRIPT_VERSION = "1.8"
+Local Const $SCRIPT_VERSION = "1.9"
 Local Const $FORUM_THREAD_ID = "1715993"
 Local Const $QR_OUTPUT_FILENAME = @ScriptDir & "\latest_QR_code.bmp"
 
@@ -393,6 +393,8 @@ Func TryToCaptureJewel($jewel_id)
 
     if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, 0) Then
+    ElseIf SearchForItemType("unique3", $item_left_x, $item_left_y, $item_width, 0) Then		
+    ElseIf SearchForItemType("unique4", $item_left_x, $item_left_y, $item_width, 0) Then		
     ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, 0) Then
@@ -1116,6 +1118,8 @@ Func TryToCaptureGem($gem_number, $size, $width, $height, $gems_search_type, $of
     $original_item_width = -1 ; Never used
     if     SearchForItemType("unique", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
     ElseIf SearchForItemType("unique2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+	ElseIf SearchForItemType("unique3", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
+	ElseIf SearchForItemType("unique4", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then		
     ElseIf SearchForItemType("rare", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
     ElseIf SearchForItemType("rare2", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
     ElseIf SearchForItemType("rare3", $original_item_left_x, $original_item_left_y, $original_item_width, 0) Then
@@ -1138,6 +1142,8 @@ Func TryToCaptureGem($gem_number, $size, $width, $height, $gems_search_type, $of
     if     SearchForItemType("gem", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
     ElseIf SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
 	ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+	ElseIf SearchForItemType("unique3", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
+	ElseIf SearchForItemType("unique4", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then	
     ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
     ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
     ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, $offset_for_gem) Then
@@ -1431,6 +1437,8 @@ Func CaptureItem($offset_x, $offset_y, $size, $need_show_links = true)
     ; Search for item tooltip
     if     SearchForItemType("unique", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("unique2", $item_left_x, $item_left_y, $item_width, 0) Then
+	ElseIf SearchForItemType("unique3", $item_left_x, $item_left_y, $item_width, 0) Then
+	ElseIf SearchForItemType("unique4", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("rare", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("rare2", $item_left_x, $item_left_y, $item_width, 0) Then
     ElseIf SearchForItemType("rare3", $item_left_x, $item_left_y, $item_width, 0) Then
